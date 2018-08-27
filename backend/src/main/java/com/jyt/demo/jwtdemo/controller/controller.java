@@ -74,7 +74,8 @@ public class controller {
     }
 
     @PostMapping("/article/create")
-    public ResultVO create(@RequestBody String Body) {
+    public ResultVO create(@RequestBody String Body,
+                           @RequestParam("authorId") String authorId) {
 
         article newArticle = new article();
         try {
@@ -84,13 +85,15 @@ public class controller {
             return ResultVOUtil.error(100, "INPUT FORMAT ERROR");
         }
 
-        log.info("Request Body: {}", newArticle.getContent());
+        newArticle.setAuthorId(authorId);
+        log.info("Request Body: {}", newArticle.getAuthorId());
         articleRepository.save(newArticle);
         return ResultVOUtil.success();
     }
 
     @PutMapping("/article/edit")
     public ResultVO edit(@RequestParam("articleId") Integer articleId,
+                         @RequestParam("authorId") String authorId,
                          @RequestBody String body) {
 
         if (!articleRepository.findById(articleId).isPresent()) {
