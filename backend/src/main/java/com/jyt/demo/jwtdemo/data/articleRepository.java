@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface articleRepository extends JpaRepository<article, Integer> {
 
+
+
 }

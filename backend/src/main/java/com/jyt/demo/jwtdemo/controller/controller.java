@@ -19,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,7 @@ public class controller {
     @Autowired
     private articleRepository articleRepository;
 
-    private GsonBuilder gsonBuilder;
-
+    @Autowired
     private Gson gson;
 
     @PostConstruct
@@ -40,10 +40,6 @@ public class controller {
 
         articleRepository.save(new article("lh0815", "test1", "test content"));
         articleRepository.save(new article("lh0815", "test2", "test content"));
-
-        this.gsonBuilder = new GsonBuilder();
-        this.gsonBuilder.setPrettyPrinting();
-        this.gson = gsonBuilder.create();
 
     }
 
@@ -80,17 +76,15 @@ public class controller {
     @PostMapping("/article/create")
     public ResultVO create(@RequestBody String Body) {
 
-
-        articleForm newArticleForm;
+        article newArticle = new article();
         try {
-            newArticleForm = this.gson.fromJson(Body, articleForm.class);
+            newArticle = this.gson.fromJson(Body, article.class);
         } catch (Exception e) {
             log.error("From json to string error. E = {}", e.toString());
             return ResultVOUtil.error(100, "INPUT FORMAT ERROR");
         }
-        article newArticle = new article();
-        //log.info("Request Body: {}", newArticleForm.getContent());
-        BeanUtils.copyProperties(newArticleForm, newArticle);
+
+        log.info("Request Body: {}", newArticle.getContent());
         articleRepository.save(newArticle);
         return ResultVOUtil.success();
     }
@@ -103,9 +97,9 @@ public class controller {
             return ResultVOUtil.error(101, "Can't find article by ID");
         }
 
-        articleForm newArticleForm;
+        article newArticle;
         try {
-            newArticleForm = this.gson.fromJson(body, articleForm.class);
+            newArticle = this.gson.fromJson(body, article.class);
         } catch (Exception e) {
             log.error("From json to string error. E = {}", e.toString());
             return ResultVOUtil.error(100, "INPUT FORMAT ERROR");
@@ -113,13 +107,30 @@ public class controller {
 
         article article = articleRepository.findById(articleId).get();
 
-        article.setContent(newArticleForm.getContent());
+        article.setContent(newArticle.getContent());
 
-        article.setTitle(newArticleForm.getTitle());
+        article.setTitle(newArticle.getTitle());
+
+        articleRepository.save(article);
 
         return ResultVOUtil.success();
 
     }
 
+
+    @PostMapping("/test")
+    public void test(HttpServletRequest request) {
+
+        String test;
+        try {
+            test = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            test = "error";
+        }
+
+        log.info("test: {}", test);
+
+    }
 
 }
