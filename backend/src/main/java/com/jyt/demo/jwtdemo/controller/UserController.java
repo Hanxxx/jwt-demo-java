@@ -44,6 +44,7 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
     @PostMapping("/auth/signup")
     public ResultVO signup(@RequestBody String Body) {
 
@@ -53,6 +54,10 @@ public class UserController {
         } catch (Exception e) {
             log.error("From json to string error. E = {}", e.toString());
             return ResultVOUtil.error(100, "INPUT FORMAT ERROR");
+        }
+
+        if (userRepository.findByUsername(newUser.getUsername()) != null) {
+            return ResultVOUtil.error(104, "USER NAME EXISTS");
         }
 
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
